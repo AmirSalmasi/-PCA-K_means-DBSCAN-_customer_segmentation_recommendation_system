@@ -50,6 +50,8 @@ data/*.csv
 !data/marketing_campaign.csv
 images/*.png
 !images/customer-segmentation-social.png
+models/
+*.joblib
 
 # Logs
 *.log
@@ -59,3 +61,7 @@ log/
 # System Files
 .DS_Store
 Thumbs.db
+
+# Streamlit
+.streamlit/
+.streamlit/secrets.toml
