@@ -5,6 +5,10 @@ import joblib
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
+import logging
+from datetime import datetime
+
+from .logging_config import logger
 
 # Set page config
 st.set_page_config(
@@ -16,14 +20,21 @@ st.set_page_config(
 # Load models
 @st.cache_resource
 def load_models():
-    models_dir = Path("models")
-    return {
-        'scaler': joblib.load(models_dir / 'scaler.joblib'),
-        'pca': joblib.load(models_dir / 'pca.joblib'),
-        'kmeans': joblib.load(models_dir / 'kmeans.joblib'),
-        'dbscan': joblib.load(models_dir / 'dbscan.joblib'),
-        'features': joblib.load(models_dir / 'features.joblib')
-    }
+    try:
+        logger.info("Loading trained models...")
+        models_dir = Path("models")
+        models = {
+            'scaler': joblib.load(models_dir / 'scaler.joblib'),
+            'pca': joblib.load(models_dir / 'pca.joblib'),
+            'kmeans': joblib.load(models_dir / 'kmeans.joblib'),
+            'dbscan': joblib.load(models_dir / 'dbscan.joblib'),
+            'features': joblib.load(models_dir / 'features.joblib')
+        }
+        logger.info("Models loaded successfully")
+        return models
+    except Exception as e:
+        logger.error(f"Error loading models: {str(e)}", exc_info=True)
+        raise
 
 # Title
 st.title("Customer Segmentation Dashboard")
@@ -34,11 +45,14 @@ model_type = st.sidebar.radio(
     "Select Clustering Model",
     ["K-means", "DBSCAN"]
 )
+logger.info(f"User selected model type: {model_type}")
 
 # Load data and models
 try:
     models = load_models()
+    logger.info("Loading customer data...")
     df = pd.read_csv("data/marketing_campaign.csv")
+    logger.info(f"Loaded {len(df)} customer records")
     
     # Preprocess data
     X = df[models['features']]
@@ -48,8 +62,10 @@ try:
     # Get predictions
     if model_type == "K-means":
         labels = models['kmeans'].predict(X_pca)
+        logger.info("Applied K-means clustering")
     else:
         labels = models['dbscan'].fit_predict(X_pca)
+        logger.info("Applied DBSCAN clustering")
     
     # Add predictions to dataframe
     df['Cluster'] = labels
@@ -65,6 +81,7 @@ try:
         st.subheader("Cluster Characteristics")
         cluster_stats = df.groupby('Cluster')[models['features']].mean()
         st.dataframe(cluster_stats.style.background_gradient())
+        logger.debug("Displayed cluster statistics")
     
     with col2:
         st.subheader("Cluster Visualization")
@@ -89,11 +106,13 @@ try:
             aspect='auto'
         )
         st.plotly_chart(fig, use_container_width=True)
+        logger.debug("Displayed cluster visualizations")
     
     # Customer details section
     st.subheader("Customer Details")
     customer_id = st.selectbox("Select Customer ID", df.index)
     customer_data = df.loc[customer_id]
+    logger.info(f"User viewing details for customer ID: {customer_id}")
     
     col3, col4 = st.columns(2)
     with col3:
@@ -113,7 +132,10 @@ try:
             title='Purchase History'
         )
         st.plotly_chart(fig, use_container_width=True)
+        logger.debug(f"Displayed purchase history for customer {customer_id}")
 
 except Exception as e:
-    st.error(f"Error loading models or data: {str(e)}")
+    error_msg = f"Error loading models or data: {str(e)}"
+    logger.error(error_msg, exc_info=True)
+    st.error(error_msg)
     st.info("Please make sure you have run the training script first.") 
