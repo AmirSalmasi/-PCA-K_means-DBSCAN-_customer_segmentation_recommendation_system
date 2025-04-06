@@ -1,7 +1,12 @@
 import json
 from pathlib import Path
 from typing import Dict, Any
+import os
+from dotenv import load_dotenv
 from .logging_config import logger
+
+# Load environment variables
+load_dotenv()
 
 class ConfigManager:
     def __init__(self, config_dir='config'):
@@ -33,7 +38,28 @@ class ConfigManager:
                 return self._get_default_config(filename)
             
             with open(config_file) as f:
-                return json.load(f)
+                config = json.load(f)
+                
+            # Override with environment variables if they exist
+            if filename == 'api_config.json':
+                config['host'] = os.getenv('API_HOST', config.get('host', '0.0.0.0'))
+                config['port'] = int(os.getenv('API_PORT', config.get('port', 8000)))
+                config['debug'] = os.getenv('API_DEBUG', 'false').lower() == 'true'
+                config['security']['api_key'] = os.getenv('API_KEY', '')
+                
+            elif filename == 'email_config.json':
+                config['smtp_server'] = os.getenv('SMTP_SERVER', config.get('smtp_server', ''))
+                config['smtp_port'] = int(os.getenv('SMTP_PORT', config.get('smtp_port', 587)))
+                config['sender_email'] = os.getenv('SMTP_USERNAME', config.get('sender_email', ''))
+                config['sender_password'] = os.getenv('SMTP_PASSWORD', config.get('sender_password', ''))
+                config['alert_recipients'] = [os.getenv('ALERT_EMAIL', '')]
+                
+            elif filename == 'monitor_config.json':
+                config['drift_threshold'] = float(os.getenv('DRIFT_THRESHOLD', config.get('drift_threshold', 0.05)))
+                config['monitoring_interval'] = int(os.getenv('MONITORING_INTERVAL', config.get('monitoring_interval', 24)))
+                
+            return config
+            
         except Exception as e:
             logger.error(f"Error loading config {filename}: {str(e)}", exc_info=True)
             return self._get_default_config(filename)
@@ -42,22 +68,23 @@ class ConfigManager:
         """Get default configuration for a specific file."""
         default_configs = {
             'app_config.json': {
-                'debug': False,
+                'debug': os.getenv('API_DEBUG', 'false').lower() == 'true',
                 'log_level': 'INFO',
-                'data_dir': 'data',
-                'model_dir': 'models',
-                'log_dir': 'logs'
+                'data_dir': os.getenv('DATA_DIR', 'data'),
+                'model_dir': os.getenv('MODEL_DIR', 'models'),
+                'log_dir': os.getenv('LOG_DIR', 'logs')
             },
             'email_config.json': {
-                'smtp_server': 'smtp.gmail.com',
-                'smtp_port': 587,
-                'sender_email': '',
-                'sender_password': ''
+                'smtp_server': os.getenv('SMTP_SERVER', 'smtp.gmail.com'),
+                'smtp_port': int(os.getenv('SMTP_PORT', 587)),
+                'sender_email': os.getenv('SMTP_USERNAME', ''),
+                'sender_password': os.getenv('SMTP_PASSWORD', ''),
+                'alert_recipients': [os.getenv('ALERT_EMAIL', '')]
             },
             'monitor_config.json': {
-                'drift_threshold': 0.05,
-                'monitoring_interval': 24,  # hours
-                'alert_recipients': [],
+                'drift_threshold': float(os.getenv('DRIFT_THRESHOLD', 0.05)),
+                'monitoring_interval': int(os.getenv('MONITORING_INTERVAL', 24)),
+                'alert_recipients': [os.getenv('ALERT_EMAIL', '')],
                 'performance_thresholds': {
                     'accuracy': 0.8,
                     'distribution_difference': 0.1
@@ -77,10 +104,15 @@ class ConfigManager:
                 }
             },
             'api_config.json': {
-                'host': '0.0.0.0',
-                'port': 8000,
-                'debug': False,
+                'host': os.getenv('API_HOST', '0.0.0.0'),
+                'port': int(os.getenv('API_PORT', 8000)),
+                'debug': os.getenv('API_DEBUG', 'false').lower() == 'true',
                 'api_key_header': 'X-API-Key',
+                'security': {
+                    'api_key_validation': True,
+                    'api_key': os.getenv('API_KEY', ''),
+                    'ssl_enabled': False
+                },
                 'rate_limit': {
                     'requests': 100,
                     'period': 60  # seconds

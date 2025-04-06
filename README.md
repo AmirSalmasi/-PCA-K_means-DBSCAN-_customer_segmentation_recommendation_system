@@ -23,7 +23,48 @@ pip install -r requirements.txt
 
 1. Create a `config` directory if it doesn't exist
 2. Copy `config/api_config.json.example` to `config/api_config.json`
-3. Update the configuration as needed
+3. Copy `.env.example` to `.env` and update the values:
+```bash
+cp .env.example .env
+```
+
+### Environment Variables
+
+The application uses environment variables for sensitive configuration. Create a `.env` file with the following variables:
+
+```bash
+# API Configuration
+API_HOST=0.0.0.0
+API_PORT=8000
+API_DEBUG=false
+API_KEY=your-secret-api-key
+
+# Database Configuration
+DB_PATH=data/customer_segmentation.db
+
+# Email Configuration
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+ALERT_EMAIL=your-email@gmail.com
+
+# Model Configuration
+MODEL_DIR=models
+DATA_DIR=data
+LOG_DIR=logs
+
+# Security
+JWT_SECRET_KEY=your-jwt-secret-key
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Monitoring
+DRIFT_THRESHOLD=0.05
+MONITORING_INTERVAL=24  # hours
+```
+
+Note: The `.env` file is ignored by git for security reasons. Make sure to keep your `.env` file secure and never commit it to version control.
 
 ## Running the API
 
