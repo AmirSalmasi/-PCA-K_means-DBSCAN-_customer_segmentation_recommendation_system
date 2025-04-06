@@ -1,0 +1,24 @@
+{
+    "host": "0.0.0.0",
+    "port": 8000,
+    "debug": false,
+    "api_key_header": "X-API-Key",
+    "cors": {
+        "allow_origins": ["*"],
+        "allow_credentials": true,
+        "allow_methods": ["*"],
+        "allow_headers": ["*"]
+    },
+    "rate_limiting": {
+        "enabled": true,
+        "requests_per_minute": 60
+    },
+    "logging": {
+        "level": "INFO",
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    },
+    "security": {
+        "api_key_validation": true,
+        "ssl_enabled": false
+    }
+} 

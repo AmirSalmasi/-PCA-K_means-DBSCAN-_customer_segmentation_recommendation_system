@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+!notebooks/*.ipynb
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Project specific
+data/*.csv
+!data/marketing_campaign.csv
+images/*.png
+!images/customer-segmentation-social.png
+models/
+*.joblib
+
+# Logs
+*.log
+logs/
+log/
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/
+.streamlit/secrets.toml
